@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SupportBank
 {
-    class DataRows
+    class DataRow
     {
         public string Date;
         public string FromName;
@@ -14,7 +14,7 @@ namespace SupportBank
         public string Narrative;
         public string MoneyOwed;
 
-        public DataRows(string Date, string FromName, string ToName, string Narrative, string MoneyOwed)
+        public DataRow(string Date, string FromName, string ToName, string Narrative, string MoneyOwed)
         {
             //'this' is an instance of the class that we are in (so this calls the Date class above not the argument)
             this.Date = Date;

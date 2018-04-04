@@ -11,35 +11,60 @@ namespace SupportBank
     {
         static void Main(string[] args)
         {
-            LoadCsv();
-
+            new Program().LoadCsv();   
         }
 
-        public static void LoadCsv() 
+        public void LoadCsv() 
         {
-           
-
             using (var reader = new StreamReader(@"C:\Work\Training\SupportBank\Transactions2014.csv"))
             {
-                List<DataRows> dataRow = new List<DataRows>();
+                List<DataRow> dataRows = new List<DataRow>();
 
                 while (!reader.EndOfStream)
                 {
                     var values = reader.ReadLine().Split(',');
-                  
-                    DataRows myRows = new DataRows(values[0], values[1], values[2], values[3], values[4]);
 
-                    dataRow.Add(myRows);
+                    var currentRow = new DataRow(values[0], values[1], values[2], values[3], values[4]);
 
-                    Console.WriteLine();
+                    dataRows.Add(currentRow);
                 }
-
-                foreach (var data in dataRow)
+                Console.WriteLine("Type 'List All' to list all transactions");
+                string userList = Console.ReadLine().ToLower();
+                Dictionary<string, string> outPutOfDictionary;
+                if(userList == "list all")
                 {
-                    Console.WriteLine("{0} {1} {2} {3} {4}",data.Date, data.FromName, data.ToName, data.Narrative, data.MoneyOwed);
-                }
+                    outPutOfDictionary = ListAll(dataRows);
+                    PrintResult(outPutOfDictionary);
+                }  
                 Console.ReadLine();
+            }
+        }
+
+        public Dictionary<string, string> ListAll(List<DataRow> dataRow)
+        {
+            var myDictionary = new Dictionary<string, string>();
+
+            foreach (var data in dataRow)
+            {
+                if(myDictionary.ContainsKey(data.FromName))
+                {
+                    myDictionary[data.FromName] += data.MoneyOwed;
+                } else
+                {
+                    myDictionary.Add(data.FromName, data.MoneyOwed);
+                }
+            }
+            return myDictionary;
+        }
+
+        public void PrintResult(Dictionary<string, string> outPutOfDictionary)
+        {
+            foreach(var key in outPutOfDictionary.Keys)
+            {
+                Console.WriteLine(key);
+                Console.WriteLine(outPutOfDictionary[key]);
             }
         }
     }
 }
+
