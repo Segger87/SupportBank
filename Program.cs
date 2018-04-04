@@ -1,4 +1,5 @@
-﻿using NLog;
+﻿using Newtonsoft.Json;
+using NLog;
 using NLog.Config;
 using NLog.Targets;
 using System;
@@ -15,12 +16,14 @@ namespace SupportBank
         static void Main(string[] args)
         {
             var config = new LoggingConfiguration();
-            var target = new FileTarget { FileName = @"C:\Work\Training\SupportBank.log", Layout = @"${longdate} ${level} - ${logger}: ${message}" };
+            var target = new FileTarget { FileName = @"C:\Work\Training\SupportBank.log", Layout = @"${longdate} ${level} Located at: ${callsite} - ${logger}: ${message}" };
             config.AddTarget("File Logger", target);
             config.LoggingRules.Add(new LoggingRule("*", LogLevel.Debug, target));
             LogManager.Configuration = config;
 
-            new Program().LoadCsv();   
+            new Program().LoadCsv();
+            JSONparse.DeserializeJSON();
+
         }
 
         public void LoadCsv() 
@@ -29,24 +32,26 @@ namespace SupportBank
             {
                 List<Transaction> transactions = new List<Transaction>();
 
-                var i = true;
+                var skipTheFirstRow = true;
 
                 while (!reader.EndOfStream)
                 {
                     var values = reader.ReadLine().Split(',');
              
-                    if (i)
+                    if (skipTheFirstRow)
                     {
-                        i = false;
-                        continue; //continue breaks 
+                        skipTheFirstRow = false;
+                        continue; //continue breaks the loop and executes the while loop again
                     }
+
                     var currentRow = Transaction.CreateIfPossible(values[0], values[1], values[2], values[3], values[4]);
+
                     if(currentRow != null)
                     {
                        transactions.Add(currentRow);
                     }
                 }
-                Console.WriteLine("Type 'List All' to list all transactions");
+                Console.WriteLine("Search for a user or type 'List All' to list all transactions");
                 string nameInputByUser = Console.ReadLine().ToLower();
 
                 if(nameInputByUser == "list all")
@@ -69,6 +74,7 @@ namespace SupportBank
 
             foreach (var data in dataRow)
             {
+                //collates all the key values to one line (i.e all users called 'Sam' are collated and their money Owed is added up.
                 if(myDictionary.ContainsKey(data.FromName))
                 {
                     myDictionary[data.FromName] += data.MoneyOwed;
@@ -95,6 +101,7 @@ namespace SupportBank
             if(!filtered.Any())
             {
                 Console.WriteLine("Sorry " + userName + " is not recognised");
+                LoadCsv();
             }
             return filtered;
         }
