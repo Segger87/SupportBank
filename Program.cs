@@ -18,7 +18,7 @@ namespace SupportBank
         {
             using (var reader = new StreamReader(@"C:\Work\Training\SupportBank\Transactions2014.csv"))
             {
-                List<DataRow> dataRows = new List<DataRow>();
+                List<Transaction> transactions = new List<Transaction>();
 
                 var i = true;
 
@@ -29,26 +29,29 @@ namespace SupportBank
                     if (i)
                     {
                         i = false;
-                        continue;
+                        continue; //continue breaks 
                     }
-                    var currentRow = new DataRow(values[0], values[1], values[2], values[3], values[4]);
-                    dataRows.Add(currentRow);
+                    var currentRow = new Transaction(values[0], values[1], values[2], values[3], values[4]);
+                   transactions.Add(currentRow);
                 }
                 Console.WriteLine("Type 'List All' to list all transactions");
-                string userList = Console.ReadLine().ToLower();
+                string nameInputByUser = Console.ReadLine().ToLower();
 
-                Dictionary<string, double> outPutOfDictionary;
-
-                if(userList == "list all")
+                if(nameInputByUser == "list all")
                 {
-                    outPutOfDictionary = ListAll(dataRows);
+                    var outPutOfDictionary = ListAll(transactions);
                     PrintResult(outPutOfDictionary);
-                }  
+                }
+                else
+                {
+                    var outputListAccount = ListAccount(transactions, nameInputByUser);
+                    PrintAccount(outputListAccount);
+                }
                 Console.ReadLine();
             }
         }
 
-        public Dictionary<string, double> ListAll(List<DataRow> dataRow)
+        public Dictionary<string, double> ListAll(List<Transaction> dataRow)
         {
             var myDictionary = new Dictionary<string, double>();
 
@@ -73,12 +76,31 @@ namespace SupportBank
             return myDictionary;
         }
 
+        public List<Transaction> ListAccount(List<Transaction> allTransactions, string userName)
+        {
+            //uses LINQ which provides the where method to filter a list based on a condition passed to it - expressed using an anonymous function.
+            var filtered = allTransactions.Where(transaction => transaction.FromName == userName || transaction.ToName == userName).ToList();
+            if(!filtered.Any())
+            {
+                Console.WriteLine("Sorry " + userName + " is not recognised");
+            }
+            return filtered;
+        }
+
         public void PrintResult(Dictionary<string, double> outPutOfDictionary)
         {
             foreach(var key in outPutOfDictionary.Keys)
             {
                 Console.WriteLine(key);
                 Console.WriteLine(outPutOfDictionary[key]);
+            }
+        }
+
+        public void PrintAccount(List<Transaction> transactionsForAccount)
+        {
+            foreach(var transaction in transactionsForAccount)
+            {
+                Console.WriteLine(transaction.ToString());
             }
         }
     }
