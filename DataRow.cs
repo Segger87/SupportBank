@@ -12,7 +12,7 @@ namespace SupportBank
         public string FromName;
         public string ToName;
         public string Narrative;
-        public string MoneyOwed;
+        public double MoneyOwed;
 
         public DataRow(string Date, string FromName, string ToName, string Narrative, string MoneyOwed)
         {
@@ -21,7 +21,7 @@ namespace SupportBank
             this.FromName = FromName;
             this.ToName = ToName;
             this.Narrative = Narrative;
-            this.MoneyOwed = MoneyOwed;
+            this.MoneyOwed = Convert.ToDouble(MoneyOwed);
         }
     }
 }
