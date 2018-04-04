@@ -1,4 +1,7 @@
-﻿using System;
+﻿using NLog;
+using NLog.Config;
+using NLog.Targets;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,12 +14,18 @@ namespace SupportBank
     {
         static void Main(string[] args)
         {
+            var config = new LoggingConfiguration();
+            var target = new FileTarget { FileName = @"C:\Work\Training\SupportBank.log", Layout = @"${longdate} ${level} - ${logger}: ${message}" };
+            config.AddTarget("File Logger", target);
+            config.LoggingRules.Add(new LoggingRule("*", LogLevel.Debug, target));
+            LogManager.Configuration = config;
+
             new Program().LoadCsv();   
         }
 
         public void LoadCsv() 
         {
-            using (var reader = new StreamReader(@"C:\Work\Training\SupportBank\Transactions2014.csv"))
+            using (var reader = new StreamReader(@"C:\Work\Training\SupportBank\DodgyTransactions2015.csv"))
             {
                 List<Transaction> transactions = new List<Transaction>();
 
@@ -31,8 +40,11 @@ namespace SupportBank
                         i = false;
                         continue; //continue breaks 
                     }
-                    var currentRow = new Transaction(values[0], values[1], values[2], values[3], values[4]);
-                   transactions.Add(currentRow);
+                    var currentRow = Transaction.CreateIfPossible(values[0], values[1], values[2], values[3], values[4]);
+                    if(currentRow != null)
+                    {
+                       transactions.Add(currentRow);
+                    }
                 }
                 Console.WriteLine("Type 'List All' to list all transactions");
                 string nameInputByUser = Console.ReadLine().ToLower();
