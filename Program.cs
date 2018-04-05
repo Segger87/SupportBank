@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -94,7 +95,9 @@ namespace SupportBank
             else
             {
                 var outputListAccount = ListAccount(transactions, nameInputByUser);
-                PrintAccount(outputListAccount);
+
+                var exportMyDamnFile = PrintAccount(outputListAccount);
+                ExportFile(exportMyDamnFile);
             }
             Console.ReadLine();
         }
@@ -147,13 +150,64 @@ namespace SupportBank
             }
         }
 
-        public void PrintAccount(List<Transaction> transactionsForAccount)
+        public List<Transaction> PrintAccount(List<Transaction> transactionsForAccount)
         {
+            var list = new List<Transaction>();
             foreach (var transaction in transactionsForAccount)
             {
                 Console.WriteLine(transaction.ToString());
+                list.Add(transaction);
             }
+            return list;
+        }
+
+        public void ExportFile(List<Transaction> outputOfPrintAccount)
+        {
+            var sBuilder = new StringBuilder();
+
+            Console.WriteLine("What file type would you like to export to? (.csv/.json/.xml)");
+            string fileType = Console.ReadLine();
+
+            sBuilder.AppendLine("Date, Name From, Name To, Narrative, Amount");
+
+            foreach (var output in outputOfPrintAccount)
+            {
+                sBuilder.AppendLine(output.ToCSVOutput());
+            }
+            if(fileType == ".json")
+            {
+                var jArray = GenerateJSON(transactions);
+                //string output = JsonConvert.SerializeObject(sBuilder);
+                File.WriteAllText(@"C:\Work\Training\SupportBank\ExportTest.json", jArray.ToString());
+            }
+            if(fileType == ".csv")
+            {
+                File.WriteAllText(@"C:\Work\Training\SupportBank\ExportTest.csv", sBuilder.ToString());
+            }
+            //try
+            //{
+            //    File.WriteAllText(@"C:\Work\Training\SupportBank\Export" + fileType, sBuilder.ToString());
+            //}
+            //catch (Exception ex)
+            //{
+            //   Console.WriteLine(ex.Message);
+            //}
+        }
+
+        private JArray GenerateJSON(List<Transaction> transactions)
+        {
+            return new JArray(
+                transactions.Select(
+                    transaction => new JObject
+                    {
+                        { "Date", transaction.Date },
+                        { "FromAccount", transaction.FromAccount },
+                        { "ToAccount", transaction.ToAccount },
+                        { "Narrative", transaction.Narrative },
+                        { "Amount", transaction.Amount }
+                    }
+                )
+            );
         }
     }
 }
-
