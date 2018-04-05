@@ -42,6 +42,14 @@ namespace SupportBank
                     transactions = JSONparse.LoadJSON(filePath);
                     UserInput();
                     break;
+                case ".xml":
+                    transactions = XMLparse.LoadXML(filePath);
+                    UserInput();
+                    break;
+                default:
+                    Console.WriteLine("Sorry " + filePath + " is not a valid file path");
+                    runProgram();
+                    break;
             }
         }
 
@@ -125,6 +133,7 @@ namespace SupportBank
             if (!filtered.Any())
             {
                 Console.WriteLine("Sorry " + userName + " is not recognised");
+                runProgram();
             }
             return filtered;
         }

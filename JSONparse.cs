@@ -17,6 +17,3 @@ namespace SupportBank
         }
     }
 }
-
-
-//have a file type method that accepts a user file location - if it is a json file run the json method if it is a csv file run the csv method
