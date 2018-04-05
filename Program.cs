@@ -13,6 +13,7 @@ namespace SupportBank
 {
     class Program
     {
+        public List<Transaction> transactions = new List<Transaction>();
         static void Main(string[] args)
         {
             var config = new LoggingConfiguration();
@@ -21,23 +22,40 @@ namespace SupportBank
             config.LoggingRules.Add(new LoggingRule("*", LogLevel.Debug, target));
             LogManager.Configuration = config;
 
-            new Program().LoadCsv();
-            JSONparse.DeserializeJSON();
-
+            new Program().runProgram();
         }
 
-        public void LoadCsv() 
+        public void runProgram()
         {
-            using (var reader = new StreamReader(@"C:\Work\Training\SupportBank\DodgyTransactions2015.csv"))
-            {
-                List<Transaction> transactions = new List<Transaction>();
+            Console.WriteLine("Enter your file type: ");
+            string filePath = Console.ReadLine();
 
+            string extension = Path.GetExtension(filePath);
+
+            switch (extension)
+            {
+                case ".csv":
+                    transactions = LoadCsv(filePath);
+                    UserInput();
+                    break;
+                case ".json":
+                    transactions = JSONparse.LoadJSON(filePath);
+                    UserInput();
+                    break;
+            }
+        }
+
+        public List<Transaction> LoadCsv(string filePath)
+        {
+            var transactions = new List<Transaction>();
+            using (var reader = new StreamReader(@filePath))
+            {
                 var skipTheFirstRow = true;
 
                 while (!reader.EndOfStream)
                 {
                     var values = reader.ReadLine().Split(',');
-             
+
                     if (skipTheFirstRow)
                     {
                         skipTheFirstRow = false;
@@ -46,26 +64,31 @@ namespace SupportBank
 
                     var currentRow = Transaction.CreateIfPossible(values[0], values[1], values[2], values[3], values[4]);
 
-                    if(currentRow != null)
+                    if (currentRow != null)
                     {
-                       transactions.Add(currentRow);
+                        transactions.Add(currentRow);
                     }
                 }
-                Console.WriteLine("Search for a user or type 'List All' to list all transactions");
-                string nameInputByUser = Console.ReadLine().ToLower();
-
-                if(nameInputByUser == "list all")
-                {
-                    var outPutOfDictionary = ListAll(transactions);
-                    PrintResult(outPutOfDictionary);
-                }
-                else
-                {
-                    var outputListAccount = ListAccount(transactions, nameInputByUser);
-                    PrintAccount(outputListAccount);
-                }
-                Console.ReadLine();
             }
+            return transactions;
+        }
+
+        public void UserInput()
+        {
+            Console.WriteLine("Search for a user or type 'List All' to list all transactions");
+            string nameInputByUser = Console.ReadLine().ToLower();
+
+            if (nameInputByUser == "list all")
+            {
+                var outPutOfDictionary = ListAll(transactions);
+                PrintResult(outPutOfDictionary);
+            }
+            else
+            {
+                var outputListAccount = ListAccount(transactions, nameInputByUser);
+                PrintAccount(outputListAccount);
+            }
+            Console.ReadLine();
         }
 
         public Dictionary<string, double> ListAll(List<Transaction> dataRow)
@@ -75,20 +98,21 @@ namespace SupportBank
             foreach (var data in dataRow)
             {
                 //collates all the key values to one line (i.e all users called 'Sam' are collated and their money Owed is added up.
-                if(myDictionary.ContainsKey(data.FromName))
+                if (myDictionary.ContainsKey(data.FromAccount))
                 {
-                    myDictionary[data.FromName] += data.MoneyOwed;
-                } else
-                {
-                    myDictionary.Add(data.FromName, data.MoneyOwed);
-                }
-                if (myDictionary.ContainsKey(data.ToName))
-                {
-                    myDictionary[data.ToName] -= data.MoneyOwed;
+                    myDictionary[data.FromAccount] += data.Amount;
                 }
                 else
                 {
-                    myDictionary.Add(data.ToName, -data.MoneyOwed);
+                    myDictionary.Add(data.FromAccount, data.Amount);
+                }
+                if (myDictionary.ContainsKey(data.ToAccount))
+                {
+                    myDictionary[data.ToAccount] -= data.Amount;
+                }
+                else
+                {
+                    myDictionary.Add(data.ToAccount, -data.Amount);
                 }
             }
             return myDictionary;
@@ -97,18 +121,17 @@ namespace SupportBank
         public List<Transaction> ListAccount(List<Transaction> allTransactions, string userName)
         {
             //uses LINQ which provides the where method to filter a list based on a condition passed to it - expressed using an anonymous function.
-            var filtered = allTransactions.Where(transaction => transaction.FromName == userName || transaction.ToName == userName).ToList();
-            if(!filtered.Any())
+            var filtered = allTransactions.Where(transaction => transaction.FromAccount == userName || transaction.ToAccount == userName).ToList();
+            if (!filtered.Any())
             {
                 Console.WriteLine("Sorry " + userName + " is not recognised");
-                LoadCsv();
             }
             return filtered;
         }
 
         public void PrintResult(Dictionary<string, double> outPutOfDictionary)
         {
-            foreach(var key in outPutOfDictionary.Keys)
+            foreach (var key in outPutOfDictionary.Keys)
             {
                 Console.WriteLine(key);
                 Console.WriteLine(outPutOfDictionary[key]);
@@ -117,7 +140,7 @@ namespace SupportBank
 
         public void PrintAccount(List<Transaction> transactionsForAccount)
         {
-            foreach(var transaction in transactionsForAccount)
+            foreach (var transaction in transactionsForAccount)
             {
                 Console.WriteLine(transaction.ToString());
             }

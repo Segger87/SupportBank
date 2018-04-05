@@ -11,10 +11,10 @@ namespace SupportBank
     {
 
         public string Date;
-        public string FromName;
-        public string ToName;
+        public string FromAccount;
+        public string ToAccount;
         public string Narrative;
-        public double MoneyOwed;
+        public double Amount;
 
         public static Transaction CreateIfPossible(string Date, string FromName, string ToName, string Narrative, string MoneyOwed)
         {
@@ -31,20 +31,20 @@ namespace SupportBank
             return new Transaction(Date, FromName, ToName, Narrative, Convert.ToDouble(MoneyOwed));
         }
 
-        private Transaction(string Date, string FromName, string ToName, string Narrative, double MoneyOwed)
+        public Transaction(string Date, string FromAccount, string ToAccount, string Narrative, double Amount)
         {
             //'this' is an instance of the class that we are in (so this calls the Date class above not the argument)
             this.Date = Date;
-            this.FromName = FromName.ToLower();
-            this.ToName = ToName.ToLower();
+            this.FromAccount = FromAccount.ToLower();
+            this.ToAccount = ToAccount.ToLower();
             this.Narrative = Narrative;
-            this.MoneyOwed = MoneyOwed;
+            this.Amount = Amount;
         }
 
         public override string ToString()
         {
             //override will over write the original objects method which is defined in the 'Object' class
-            return Date + " " + FromName + " " + ToName + " " + Narrative + " " + MoneyOwed;
+            return Date + " " + FromAccount + " " + ToAccount + " " + Narrative + " " + Amount;
         }
     }
 }
