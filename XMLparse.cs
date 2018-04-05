@@ -32,7 +32,6 @@ namespace SupportBank
                     transactions.Add(CreateIfPossible);
                 }
             }
-
             return transactions;
         }
     }

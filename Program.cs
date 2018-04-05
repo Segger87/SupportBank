@@ -7,8 +7,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Linq;
+using System.Xml.Serialization;
 
 namespace SupportBank
 {
@@ -90,12 +94,12 @@ namespace SupportBank
             if (nameInputByUser == "list all")
             {
                 var outPutOfDictionary = ListAll(transactions);
-                PrintResult(outPutOfDictionary);
+                var exportMyDamnUsers = PrintResult(outPutOfDictionary);
+                ExportFile(exportMyDamnUsers);
             }
             else
             {
                 var outputListAccount = ListAccount(transactions, nameInputByUser);
-
                 var exportMyDamnFile = PrintAccount(outputListAccount);
                 ExportFile(exportMyDamnFile);
             }
@@ -141,13 +145,15 @@ namespace SupportBank
             return filtered;
         }
 
-        public void PrintResult(Dictionary<string, double> outPutOfDictionary)
+        public List<Transaction> PrintResult(Dictionary<string, double> outPutOfDictionary)
         {
+            var list = new List<Transaction>();
             foreach (var key in outPutOfDictionary.Keys)
             {
                 Console.WriteLine(key);
                 Console.WriteLine(outPutOfDictionary[key]);
             }
+            return list;
         }
 
         public List<Transaction> PrintAccount(List<Transaction> transactionsForAccount)
@@ -174,24 +180,26 @@ namespace SupportBank
             {
                 sBuilder.AppendLine(output.ToCSVOutput());
             }
-            if(fileType == ".json")
+            switch (fileType)
             {
-                var jArray = GenerateJSON(transactions);
-                //string output = JsonConvert.SerializeObject(sBuilder);
-                File.WriteAllText(@"C:\Work\Training\SupportBank\ExportTest.json", jArray.ToString());
+                case ".json":
+                    var jArray = GenerateJSON(outputOfPrintAccount);
+                    File.WriteAllText(@"C:\Work\Training\SupportBank\ExportTest.json", jArray.ToString());
+                    Console.WriteLine("File has been created");
+                    break;
+                case ".csv":
+                    File.WriteAllText(@"C:\Work\Training\SupportBank\ExportTest.csv", sBuilder.ToString());
+                    Console.WriteLine("File has been created");
+                    break;
+                case ".xml":
+                    var xml = XMLdata(outputOfPrintAccount);
+                    File.WriteAllText(@"C:\Work\Training\SupportBank\ExportTest.xml", xml.ToString());
+                    break;
+                default:
+                    Console.WriteLine("Sorry, " + fileType + " is not an acceptable format");
+                    UserInput();
+                    break;
             }
-            if(fileType == ".csv")
-            {
-                File.WriteAllText(@"C:\Work\Training\SupportBank\ExportTest.csv", sBuilder.ToString());
-            }
-            //try
-            //{
-            //    File.WriteAllText(@"C:\Work\Training\SupportBank\Export" + fileType, sBuilder.ToString());
-            //}
-            //catch (Exception ex)
-            //{
-            //   Console.WriteLine(ex.Message);
-            //}
         }
 
         private JArray GenerateJSON(List<Transaction> transactions)
@@ -208,6 +216,19 @@ namespace SupportBank
                     }
                 )
             );
+        }
+        private XElement XMLdata(List<Transaction> transactions)
+        {
+            var xml = new XElement("TransactionList", 
+                transactions.Select(transaction => new XElement
+                    ("TransactionList",
+                    new XAttribute("Amount", transaction.Amount),
+                    new XAttribute("Narrative", transaction.Narrative),
+                    new XAttribute("ToAccount", transaction.ToAccount),
+                    new XAttribute("FromAccount", transaction.FromAccount),
+                    new XAttribute("Date", transaction.Date)
+                    )));
+            return xml;
         }
     }
 }

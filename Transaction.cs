@@ -9,7 +9,6 @@ namespace SupportBank
 {
     class Transaction
     {
-
         public string Date;
         public string FromAccount;
         public string ToAccount;
