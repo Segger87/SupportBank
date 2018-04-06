@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -7,12 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
-using System.Xml.Linq;
-using System.Xml.Serialization;
+
 
 namespace SupportBank
 {
@@ -192,8 +187,9 @@ namespace SupportBank
                     Console.WriteLine("File has been created");
                     break;
                 case ".xml":
-                    var xml = XMLdata(outputOfPrintAccount);
+                    var xml = XMLparse.XMLdata(outputOfPrintAccount);
                     File.WriteAllText(@"C:\Work\Training\SupportBank\ExportTest.xml", xml.ToString());
+                    Console.WriteLine("File has been created");
                     break;
                 default:
                     Console.WriteLine("Sorry, " + fileType + " is not an acceptable format");
@@ -216,19 +212,6 @@ namespace SupportBank
                     }
                 )
             );
-        }
-        private XElement XMLdata(List<Transaction> transactions)
-        {
-            var xml = new XElement("TransactionList", 
-                transactions.Select(transaction => new XElement
-                    ("TransactionList",
-                    new XAttribute("Amount", transaction.Amount),
-                    new XAttribute("Narrative", transaction.Narrative),
-                    new XAttribute("ToAccount", transaction.ToAccount),
-                    new XAttribute("FromAccount", transaction.FromAccount),
-                    new XAttribute("Date", transaction.Date)
-                    )));
-            return xml;
         }
     }
 }

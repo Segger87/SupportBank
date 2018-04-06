@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Xml;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Serialization;
+using System.Xml.Linq;
 
 namespace SupportBank
 {
@@ -33,6 +31,20 @@ namespace SupportBank
                 }
             }
             return transactions;
+        }
+        public static XElement XMLdata(List<Transaction> transactions)
+        {
+            var xml = new XElement("TransactionList",
+                transactions.Select(transaction => new XElement
+                    ("SupportTransaction",
+                    new XAttribute("Date", transaction.Date),
+                    new XElement("Narrative", transaction.Narrative),
+                    new XElement("Amount", transaction.Amount),
+                    new XElement("Parties",
+                    new XElement("FromAccount", transaction.FromAccount),
+                    new XElement("ToAccount", transaction.ToAccount)
+                    ))));
+            return xml;
         }
     }
 }
